@@ -1,3 +1,4 @@
+```js
 import { NextRequest, NextResponse } from 'next/server'
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
@@ -18,10 +19,11 @@ export async function POST(request: NextRequest) {
     let extractionMethod = 'unknown'
     
     if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-      // For PDFs, try methods in order of reliability (removed PDF.js)
+      // For PDFs, try methods in order of reliability
       const extractionMethods = [
         { name: 'jina-ai', fn: extractPDFTextWithJina },
-        { name: 'gemini-vision', fn: extractPDFWithGeminiVision }
+        { name: 'gemini-vision', fn: extractPDFWithGeminiVision },
+        { name: 'pdf-js', fn: extractPDFTextWithPDFJS }
       ]
       
       let lastError = null
@@ -49,7 +51,7 @@ export async function POST(request: NextRequest) {
       
       if (!content) {
         return NextResponse.json({ 
-          error: 'Failed to extract readable text from PDF. This PDF might be:\n• Image-based (scanned document)\n• Password protected\n• Corrupted or using unsupported encoding\n• Contains only graphics/charts\n\nPlease try:\n• Converting to text format first\n• Using OCR software if it\'s a scanned document\n• Ensuring the PDF has selectable text\n\nNote: For best results, configure JINA_API_KEY in your environment variables.' 
+          error: 'Failed to extract readable text from PDF. This PDF might be:\n• Image-based (scanned document)\n• Password protected\n• Corrupted or using unsupported encoding\n• Contains only graphics/charts\n\nPlease try:\n• Converting to text format first\n• Using OCR software if it\'s a scanned document\n• Ensuring the PDF has selectable text' 
         }, { status: 400 })
       }
       
@@ -160,9 +162,7 @@ async function extractPDFTextWithJina(file: File): Promise<string> {
   })
   
   if (!response.ok) {
-    const errorText = await response.text()
-    console.error('Jina AI API error response:', errorText)
-    throw new Error(`Jina AI API error: ${response.status} - ${errorText}`)
+    throw new Error(`Jina AI API error: ${response.status}`)
   }
   
   const result = await response.json()
@@ -195,7 +195,7 @@ async function extractPDFWithGeminiVision(file: File): Promise<string> {
             role: 'user',
             parts: [
               {
-                text: 'Please extract all the readable text content from this PDF document. Return only the actual text content, no analysis or commentary. If the PDF contains tables, preserve their structure. If there are multiple pages, include all text from all pages. Focus on extracting clean, readable text without any formatting artifacts or metadata.'
+                text: 'Please extract all the readable text content from this PDF document. Return only the actual text content, no analysis or commentary. If the PDF contains tables, preserve their structure. If there are multiple pages, include all text from all pages.'
               },
               {
                 inline_data: {
@@ -214,17 +214,10 @@ async function extractPDFWithGeminiVision(file: File): Promise<string> {
     )
     
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Gemini Vision API error response:', errorText)
-      throw new Error(`Gemini Vision API error: ${response.status} - ${errorText}`)
+      throw new Error(`Gemini Vision API error: ${response.status}`)
     }
     
     const data = await response.json()
-    
-    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-      throw new Error('Invalid response structure from Gemini Vision API')
-    }
-    
     const extractedText = data.candidates[0].content.parts[0].text
     
     if (!extractedText || extractedText.length < 100) {
@@ -234,6 +227,44 @@ async function extractPDFWithGeminiVision(file: File): Promise<string> {
     return extractedText
   } catch (error) {
     console.error('Gemini Vision extraction error:', error)
+    throw error
+  }
+}
+
+async function extractPDFTextWithPDFJS(file: File): Promise<string> {
+  try {
+    // Dynamic import of PDF.js
+    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js')
+    
+    // Set worker source to CDN
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+    
+    const arrayBuffer = await file.arrayBuffer()
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+    
+    let fullText = ''
+    
+    // Extract text from each page
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum)
+      const textContent = await page.getTextContent()
+      
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ')
+      
+      if (pageText.trim()) {
+        fullText += `\n\n--- Page ${pageNum} ---\n\n${pageText}`
+      }
+    }
+    
+    if (!fullText.trim() || fullText.length < 100) {
+      throw new Error('Insufficient text extracted via PDF.js')
+    }
+    
+    return fullText.trim()
+  } catch (error) {
+    console.error('PDF.js extraction error:', error)
     throw error
   }
 }
@@ -347,17 +378,10 @@ IMPORTANT: Base your entire analysis on the actual content provided above. Do no
     )
     
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Gemini API error response:', errorText)
-      throw new Error(`Gemini API error: ${response.status} - ${errorText}`)
+      throw new Error(`Gemini API error: ${response.status}`)
     }
     
     const data = await response.json()
-    
-    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-      throw new Error('Invalid response structure from Gemini API')
-    }
-    
     const text = data.candidates[0].content.parts[0].text
     
     try {
@@ -400,3 +424,5 @@ IMPORTANT: Base your entire analysis on the actual content provided above. Do no
     throw new Error('Failed to generate AI analysis')
   }
 }
+
+```

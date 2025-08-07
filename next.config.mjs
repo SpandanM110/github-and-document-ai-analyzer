@@ -7,6 +7,7 @@ const nextConfig = {
         fs: false,
         path: false,
         os: false,
+        canvas: false,
       }
     }
     
