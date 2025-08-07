@@ -1,3 +1,144 @@
+# AI Repository & Document Analyzer
+
+A powerful Next.js application that analyzes GitHub repositories and documents using AI to provide comprehensive insights, visualizations, and summaries.
+
+## What It Does
+
+- **GitHub Repository Analysis**: Analyze any public GitHub repository to get detailed insights about its purpose, technologies, contributors, and potential use cases
+- **Document Analysis**: Upload PDF, Markdown, or text files to extract content and generate AI-powered analysis
+- **Smart Visualizations**: Interactive charts showing repository stats, language distribution, and contributor data
+- **AI-Powered Insights**: Uses Google Gemini AI to provide detailed summaries, feature lists, technology stacks, and real-world use cases
+
+## Technologies & Tools
+
+### Frontend & Framework
+- **Next.js 15** - React framework with App Router
+- **React 19** - UI library
+- **TypeScript** - Type-safe JavaScript
+- **Tailwind CSS** - Utility-first CSS framework
+- **shadcn/ui** - Modern UI component library
+
+### AI & APIs
+- **Google Gemini AI** - Text analysis and content generation
+- **Jina AI** - Professional PDF text extraction
+- **GitHub API** - Repository data fetching
+- **Gemini Vision** - AI-powered PDF reading
+
+### Data Visualization
+- **Recharts** - Interactive charts and graphs
+- **Lucide React** - Beautiful icons
+
+### Document Processing
+- **Cheerio** - HTML parsing for web scraping
+- **PDF Processing** - Multiple extraction methods for reliable text extraction
+
+### Deployment & Build
+- **Vercel** - Serverless deployment platform
+- **Webpack** - Module bundler with custom configurations
+
+## Main Approach
+
+### 1. **Multi-Source Analysis**
+The application takes two main input types:
+- **GitHub Repository URLs** - Fetches comprehensive data via GitHub API
+- **Document Uploads** - Processes PDF, Markdown, and text files
+
+### 2. **Intelligent Data Extraction**
+- **Repository Data**: Stars, forks, languages, contributors, README content, topics
+- **Document Content**: Smart text extraction with validation to filter out corrupted data
+- **Content Validation**: Ensures extracted text is meaningful and readable
+
+### 3. **AI-Powered Analysis Pipeline**
+\`\`\`
+Input → Data Extraction → Content Validation → AI Analysis → Structured Output
+\`\`\`
+
+- Uses Google Gemini AI with carefully crafted prompts
+- Analyzes actual content rather than providing generic responses
+- Generates structured insights including summaries, features, technologies, and use cases
+
+### 4. **Smart PDF Processing**
+Multiple extraction methods with fallbacks:
+1. **Jina AI** - Professional PDF parsing service
+2. **Gemini Vision** - AI reads PDFs like a human
+3. **Content Quality Validation** - Filters out garbage/corrupted data
+
+### 5. **Interactive Visualizations**
+- Repository statistics (stars vs forks)
+- Programming language distribution
+- Top contributors analysis
+- Responsive charts that work on all devices
+
+## 🔧 Key Features
+
+- **Dual Analysis Modes**: GitHub repositories and document uploads
+- **Smart Content Validation**: Automatically detects and rejects corrupted/meaningless content
+- **Professional PDF Processing**: Uses enterprise-grade APIs for reliable text extraction
+- **Comprehensive AI Analysis**: Detailed insights about purpose, technologies, and use cases
+- **Interactive Charts**: Visual representation of repository metrics and language usage
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Error Handling**: Graceful fallbacks and helpful error messages
+
+## Getting Started
+
+1. **Clone the repository**
+\`\`\`bash
+git clone <repository-url>
+cd ai-repository-analyzer
+\`\`\`
+
+2. **Install dependencies**
+\`\`\`bash
+npm install
+\`\`\`
+
+3. **Set up environment variables**
+\`\`\`bash
+# Required
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Optional (for enhanced features)
+GITHUB_TOKEN=your_github_token_here
+JINA_API_KEY=your_jina_api_key_here
+\`\`\`
+
+4. **Run the development server**
+\`\`\`bash
+npm run dev
+\`\`\`
+
+5. **Open [http://localhost:3000](http://localhost:3000)**
+
+## Environment Variables
+
+- `GEMINI_API_KEY` - **Required** for AI analysis
+- `GITHUB_TOKEN` - Optional, increases GitHub API rate limits
+- `JINA_API_KEY` - Optional, enables professional PDF parsing
+
+## Use Cases
+
+- **Developer Research**: Quickly understand new repositories and their technologies
+- **Document Analysis**: Extract insights from technical documentation, research papers, and reports
+- **Project Planning**: Analyze similar projects to understand technology choices and approaches
+- **Educational**: Learn about different programming languages and frameworks used in real projects
+- **Content Review**: Quickly summarize and analyze large documents
+
+## Architecture
+
+The application follows a modern serverless architecture:
+- **Frontend**: React components with TypeScript
+- **API Routes**: Next.js API routes for server-side processing
+- **AI Integration**: Direct API calls to Gemini and Jina AI services
+- **Data Processing**: Client-side and server-side data transformation
+- **Deployment**: Optimized for Vercel's serverless platform
+
+---
+
+Built with ❤️ using Next.js, AI APIs, and modern web technologies.
+
+
+
+## Main Code for PDF and JINA AI
 ```js
 import { NextRequest, NextResponse } from 'next/server'
 
